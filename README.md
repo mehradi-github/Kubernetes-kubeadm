@@ -9,6 +9,8 @@ kubeadm performs the actions necessary to get a minimum viable cluster up and ru
   - [Table of Contents](#table-of-contents)
   - [Installing kubeadm](#installing-kubeadm)
     - [System Requirements](#system-requirements)
+    - [Control plane](#control-plane)
+    - [Worker node(s)](#worker-nodes)
 
 ## Installing kubeadm
 This page shows how to [install the kubeadm toolbox](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/) on Amazon Linux 2 as a virtual machine.
@@ -25,4 +27,50 @@ This page shows how to [install the kubeadm toolbox](https://kubernetes.io/docs/
 ip link 
 ifconfig -a
 sudo cat /sys/class/dmi/id/product_uuid
+# Check required ports
+
+sudo swapoff -a
+
+sudo yum install nc
+sudo systemctl stop iptables
+chkconfig iptables off
+chkconfig  --list |grep iptables
+sudo systemctl disable iptables
+
+#List all open ports
+# This will print all listening sockets (-l) along with the port number (-n), with TCP ports (-t) and UDP ports (-u) also listed in the output.
+#netstat -lntu
+
+#list listening sockets with an open port
+#ss -lntu
+
+# This sets the firewall to append (-A) the new rule to accept input packets via protocol (-p) TCP where the destination port (--dport) is 6443, and specifies the target jump (-j) rule as ACCEPT.
+#sudo iptables -A INPUT -p tcp --dport 6443 -j ACCEPT
+#sudo service iptables restart
+#sudo systemctl restart iptables
+
+# ls | nc -l -p 6443
+# telnet localhost 6443
+
+# nc -l -p 6443
+# nc 127.0.0.1 6443
+# netstat -ntlp | grep 6443
+
+
 ```
+### Control plane
+| Protocol | Direction | Port Range | Purpose                 | Used By              |
+| :------: | :-------: | :--------: | :---------------------- | :------------------- |
+|   TCP    |  Inbound  |    6443    | Kubernetes API server   | All                  |
+|   TCP    |  Inbound  | 2379-2380  | etcd server client API  | kube-apiserver, etcd |
+|   TCP    |  Inbound  |   10250    | Kubelet API             | Self, Control plane  |
+|   TCP    |  Inbound  |   10259    | kube-scheduler          | Self                 |
+|   TCP    |  Inbound  |   10257    | kube-controller-manager | Self                 |
+
+### Worker node(s)
+| Protocol | Direction | Port Range  | Purpose            | Used By             |
+| :------: | :-------: | :---------: | :----------------- | :------------------ |
+|   TCP    |  Inbound  |    10250    | Kubelet API        | Self, Control plane |
+|   TCP    |  Inbound  | 30000-32767 | NodePort Services† | All                 |
+
+more detailes: [Ports and Protocols](https://kubernetes.io/docs/reference/ports-and-protocols/), [Opening a port on Linux](https://www.digitalocean.com/community/tutorials/opening-a-port-on-linux)
