@@ -11,6 +11,8 @@ kubeadm performs the actions necessary to get a minimum viable cluster up and ru
     - [System Requirements](#system-requirements)
     - [Control plane](#control-plane)
     - [Worker node(s)](#worker-nodes)
+  - [Installing a container runtime](#installing-a-container-runtime)
+    - [Forwarding IPv4 and letting iptables see bridged traffic](#forwarding-ipv4-and-letting-iptables-see-bridged-traffic)
 
 ## Installing kubeadm
 This page shows how to [install the kubeadm toolbox](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/) on Amazon Linux 2 as a virtual machine.
@@ -84,3 +86,36 @@ telnet <IP> 6443
 |   TCP    |  Inbound  | 30000-32767 | NodePort Services† | All                 |
 
 more detailes: [Ports and Protocols](https://kubernetes.io/docs/reference/ports-and-protocols/), [Opening a port on Linux](https://www.digitalocean.com/community/tutorials/opening-a-port-on-linux)
+
+## Installing a container runtime
+Docker Engine does not implement the CRI which is a requirement for a [container runtime](https://kubernetes.io/docs/setup/production-environment/container-runtimes/) to work with Kubernetes. For that reason, an additional service cri-dockerd has to be installed. cri-dockerd is a project based on the legacy built-in Docker Engine support that was removed from the kubelet in version 1.24.
+
+### Forwarding IPv4 and letting iptables see bridged traffic
+
+```sh
+
+cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+overlay
+br_netfilter
+EOF
+
+sudo modprobe overlay
+#To load it explicitly
+sudo modprobe br_netfilter
+
+#Verify that the br_netfilter module is loaded 
+lsmod | grep br_netfilter
+
+# sysctl params required by setup, params persist across reboots
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward                 = 1
+EOF
+
+# Apply sysctl params without reboot
+sudo sysctl --system
+
+
+```
+
