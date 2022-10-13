@@ -28,6 +28,9 @@ ip link
 ifconfig -a
 sudo cat /sys/class/dmi/id/product_uuid
 
+hostnamectl set-hostname 'gfs-server-03'
+hostnamectl
+
 sudo swapoff -a
 
 # Check required ports
