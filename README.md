@@ -27,36 +27,43 @@ This page shows how to [install the kubeadm toolbox](https://kubernetes.io/docs/
 ip link 
 ifconfig -a
 sudo cat /sys/class/dmi/id/product_uuid
-# Check required ports
 
 sudo swapoff -a
 
+# Check required ports
 sudo yum install nc
-sudo systemctl stop iptables
-chkconfig iptables off
-chkconfig  --list |grep iptables
-sudo systemctl disable iptables
+sudo yum install iptables-services
+
+sudo systemctl enable iptables
+sudo systemctl start iptables
+sudo systemctl status iptables
 
 #List all open ports
 # This will print all listening sockets (-l) along with the port number (-n), with TCP ports (-t) and UDP ports (-u) also listed in the output.
-#netstat -lntu
+netstat -lntu
 
 #list listening sockets with an open port
-#ss -lntu
+ss -lntu
 
 # This sets the firewall to append (-A) the new rule to accept input packets via protocol (-p) TCP where the destination port (--dport) is 6443, and specifies the target jump (-j) rule as ACCEPT.
-#sudo iptables -A INPUT -p tcp --dport 6443 -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 6443 -j ACCEPT
 #sudo service iptables restart
-#sudo systemctl restart iptables
+sudo systemctl restart iptables
+sudo iptables-save | sudo tee -a /etc/iptables.conf
+sudo iptables-restore < /etc/iptables.conf
+sudo iptables -L
 
-# ls | nc -l -p 6443
-# telnet localhost 6443
+nc -l -p 6443
+# check
+telnet <IP> 6443
+# ^]
+# telnet> close
 
-# nc -l -p 6443
-# nc 127.0.0.1 6443
-# netstat -ntlp | grep 6443
 
-
+# sudo systemctl stop iptables
+# chkconfig iptables off
+# chkconfig  --list |grep iptables
+# sudo systemctl disable iptables
 ```
 ### Control plane
 | Protocol | Direction | Port Range | Purpose                 | Used By              |
