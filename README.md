@@ -13,6 +13,7 @@ kubeadm performs the actions necessary to get a minimum viable cluster up and ru
     - [Worker node(s)](#worker-nodes)
   - [Installing a container runtime](#installing-a-container-runtime)
     - [Forwarding IPv4 and letting iptables see bridged traffic](#forwarding-ipv4-and-letting-iptables-see-bridged-traffic)
+    - [Install Docker Engine](#install-docker-engine)
 
 ## Installing kubeadm
 This page shows how to [install the kubeadm toolbox](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/) on Amazon Linux 2 as a virtual machine.
@@ -119,3 +120,47 @@ sudo sysctl --system
 
 ```
 
+### Install Docker Engine
+[Docker Engine](https://docs.docker.com/engine/install/) is available on a variety of Linux platforms.
+The contents of /var/lib/docker/, including images, containers, volumes, and networks, are preserved. The Docker Engine package is now called **docker-ce**.
+```sh
+
+#Uninstall old versions
+sudo yum remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-engine
+
+# installing by amazon-linux-extras   
+sudo yum -y update
+sudo yum install -y amazon-linux-extras
+amazon-linux-extras | grep -n -i docker
+sudo amazon-linux-extras enable docker
+sudo yum install docker -y
+
+# installing by dnf 
+# sudo dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+# sudo dnf update
+# sudo dnf install -y docker-ce docker-ce-cli containerd.io
+# sudo dnf install docker-ce docker-ce-cli containerd.io --allowerasing -y
+
+# installing by yum 
+# sudo yum install -y yum-utils
+# sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo    
+# sudo yum install docker-ce docker-ce-cli containerd.io
+
+# start docker services
+sudo systemctl enable docker
+sudo systemctl start docker
+service docker status
+sudo docker version
+
+sudo useradd dockeradmin
+sudo passwd dockeradmin
+sudo usermod -aG docker dockeradmin
+ 
+```
