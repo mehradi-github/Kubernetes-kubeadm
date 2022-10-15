@@ -17,6 +17,7 @@ kubeadm performs the actions necessary to get a minimum viable cluster up and ru
     - [Installing Calico networking and network policy(on master node)](#installing-calico-networking-and-network-policyon-master-node)
     - [Joining the worker nodes to the master node to from the k8s cluster(on worker node)](#joining-the-worker-nodes-to-the-master-node-to-from-the-k8s-clusteron-worker-node)
     - [Accessing the K8s Cluster and Deploying a POD(on master node)](#accessing-the-k8s-cluster-and-deploying-a-podon-master-node)
+  - [kubectl Cheat Sheet](#kubectl-cheat-sheet)
 
 ## Installing Kubernetes Cluster using kubeadm
 This page shows how to [install the kubeadm toolbox](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/) on Amazon Linux 2 as a virtual machine.
@@ -243,3 +244,5 @@ kubectl get nodes -o wide
 kubectl run mynginx --image=nginx 
 kubectl get pods -o wide --watch
 ```
+## kubectl Cheat Sheet
+This page contains a list of commonly used kubectl commands and flags. [**kubectl Cheat Sheet**](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
