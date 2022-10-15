@@ -13,8 +13,9 @@ kubeadm performs the actions necessary to get a minimum viable cluster up and ru
     - [Installing Docker as container runtime (CRI)](#installing-docker-as-container-runtime-cri)
     - [Installing kubeadm, kubelet and kubectl](#installing-kubeadm-kubelet-and-kubectl)
     - [Configuring cgroups driver (Ignore if runtime is docker)](#configuring-cgroups-driver-ignore-if-runtime-is-docker)
-    - [**On Master Node:**](#on-master-node)
-    - [**On Worker Node:**](#on-worker-node)
+    - [Initializing Kubernetes Cluster(on master node)](#initializing-kubernetes-clusteron-master-node)
+    - [Installing Calico networking and network policy(on master node)](#installing-calico-networking-and-network-policyon-master-node)
+    - [Joining the worker nodes to the master node to from the k8s cluster(on worker node)](#joining-the-worker-nodes-to-the-master-node-to-from-the-k8s-clusteron-worker-node)
 
 ## Installing Kubernetes Cluster using kubeadm
 This page shows how to [install the kubeadm toolbox](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/) on Amazon Linux 2 as a virtual machine.
@@ -36,35 +37,37 @@ hostnamectl set-hostname 'gfs-server-03'
 hostnamectl
 
 sudo swapoff -a
+# Disabling firewall
+sudo systemctl disable --now iptables
 
-# Check required ports
-sudo yum install nc
-sudo yum install iptables-services
+# # Check required ports
+# sudo yum install nc
+# sudo yum install iptables-services
 
-sudo systemctl enable iptables
-sudo systemctl start iptables
-sudo systemctl status iptables
+# sudo systemctl enable iptables
+# sudo systemctl start iptables
+# sudo systemctl status iptables
 
-#List all open ports
-# This will print all listening sockets (-l) along with the port number (-n), with TCP ports (-t) and UDP ports (-u) also listed in the output.
-netstat -lntu
+# #List all open ports
+# # This will print all listening sockets (-l) along with the port number (-n), with TCP ports (-t) and UDP ports (-u) also listed in the output.
+# netstat -lntu
 
-#list listening sockets with an open port
-ss -lntu
+# #list listening sockets with an open port
+# ss -lntu
 
-# This sets the firewall to append (-A) the new rule to accept input packets via protocol (-p) TCP where the destination port (--dport) is 6443, and specifies the target jump (-j) rule as ACCEPT.
-sudo iptables -A INPUT -p tcp --dport 6443 -j ACCEPT
-#sudo service iptables restart
-sudo systemctl restart iptables
-sudo iptables-save | sudo tee -a /etc/iptables.conf
-sudo iptables-restore < /etc/iptables.conf
-sudo iptables -L
+# # This sets the firewall to append (-A) the new rule to accept input packets via protocol (-p) TCP where the destination port (--dport) is 6443, and specifies the target jump (-j) rule as ACCEPT.
+# sudo iptables -A INPUT -p tcp --dport 6443 -j ACCEPT
+# #sudo service iptables restart
+# sudo systemctl restart iptables
+# sudo iptables-save | sudo tee -a /etc/iptables.conf
+# sudo iptables-restore < /etc/iptables.conf
+# sudo iptables -L
 
-nc -l -p 6443
-# check
-telnet <IP> 6443
-# ^]
-# telnet> close
+# nc -l -p 6443
+# # check
+# telnet <IP> 6443
+# # ^]
+# # telnet> close
 
 
 # sudo systemctl stop iptables
@@ -203,11 +206,10 @@ There are two [cgroup drivers](https://kubernetes.io/docs/setup/production-envir
 - cgroupfs
 - systemd
   
-### **On Master Node:**
+### Initializing Kubernetes Cluster(on master node)
 ```sh
 sudo su
 ip addr
-#Initialize Kubernetes Cluster
 kubeadm init --apiserver-advertise-address=<MasterServerIP> --pod-network-cidr=192.168.0.0/16
 exit
 mkdir -p $HOME/.kube
@@ -215,8 +217,24 @@ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 kubectl get nodes
 ```
-
-### **On Worker Node:**
+### Installing Calico networking and network policy(on master node)
+[Calico](https://projectcalico.docs.tigera.io/about/about-calico) is a [networking and network policy](https://kubernetes.io/docs/concepts/cluster-administration/addons/#networking-and-network-policy) provider. Calico supports a flexible set of networking options so you can choose the most efficient option for your situation, including non-overlay and overlay networks, with or without BGP. Calico uses the same engine to enforce network policy for hosts, pods, and (if using Istio & Envoy) applications at the service mesh layer.
+[Install Calico with Kubernetes API datastore, 50 nodes or less](https://projectcalico.docs.tigera.io/getting-started/kubernetes/self-managed-onprem/onpremises#install-calico-with-kubernetes-api-datastore-50-nodes-or-less)
 ```sh
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/calico.yaml
+
+# kubeadm token create --print-join-command
+
+# Get component status
+kubectl get cs
+# Get nodes
+kubectl get nodes -o wide
+
+```
+### Joining the worker nodes to the master node to from the k8s cluster(on worker node)
+```sh
+sudo kubeadm join <MASTER_IP>:6443 --token <TOKEN> \
+        --discovery-token-ca-cert-hash <HASH>
+
 
 ```
