@@ -13,7 +13,8 @@ kubeadm performs the actions necessary to get a minimum viable cluster up and ru
     - [Worker node(s)](#worker-nodes)
   - [Installing a container runtime](#installing-a-container-runtime)
     - [Forwarding IPv4 and letting iptables see bridged traffic](#forwarding-ipv4-and-letting-iptables-see-bridged-traffic)
-    - [Install Docker Engine](#install-docker-engine)
+    - [Installing a container runtime](#installing-a-container-runtime-1)
+    - [Installing kubeadm, kubelet and kubectl](#installing-kubeadm-kubelet-and-kubectl)
 
 ## Installing kubeadm
 This page shows how to [install the kubeadm toolbox](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/) on Amazon Linux 2 as a virtual machine.
@@ -120,7 +121,10 @@ sudo sysctl --system
 
 ```
 
-### Install Docker Engine
+### Installing a container runtime
+To run containers in Pods, Kubernetes uses a [container runtime](https://kubernetes.io/docs/setup/production-environment/container-runtimes/).
+By default, Kubernetes uses the Container Runtime Interface (CRI) to interface with your chosen container runtime.
+
 [Docker Engine](https://docs.docker.com/engine/install/) is available on a variety of Linux platforms.
 The contents of /var/lib/docker/, including images, containers, volumes, and networks, are preserved. The Docker Engine package is now called **docker-ce**.
 ```sh
@@ -167,4 +171,31 @@ sudo useradd dockeradmin
 sudo passwd dockeradmin
 sudo usermod -aG docker dockeradmin
  
+```
+### Installing kubeadm, kubelet and kubectl
+
+- kubeadm: the command to bootstrap the cluster.
+
+- kubelet: the component that runs on all of the machines in your cluster and does things like starting pods and containers.
+
+- kubectl: the command line util to talk to your cluster.
+
+```sh
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+exclude=kubelet kubeadm kubectl
+EOF
+
+# Set SELinux in permissive mode (effectively disabling it)
+sudo setenforce 0
+sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+
+sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+
+sudo systemctl enable --now kubelet
 ```
