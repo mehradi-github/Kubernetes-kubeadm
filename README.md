@@ -16,6 +16,7 @@ kubeadm performs the actions necessary to get a minimum viable cluster up and ru
     - [Initializing Kubernetes Cluster(on master node)](#initializing-kubernetes-clusteron-master-node)
     - [Installing Calico networking and network policy(on master node)](#installing-calico-networking-and-network-policyon-master-node)
     - [Joining the worker nodes to the master node to from the k8s cluster(on worker node)](#joining-the-worker-nodes-to-the-master-node-to-from-the-k8s-clusteron-worker-node)
+    - [Accessing the K8s Cluster and Deploying a POD(on master node)](#accessing-the-k8s-cluster-and-deploying-a-podon-master-node)
 
 ## Installing Kubernetes Cluster using kubeadm
 This page shows how to [install the kubeadm toolbox](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/) on Amazon Linux 2 as a virtual machine.
@@ -224,17 +225,21 @@ kubectl get nodes
 kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/calico.yaml
 
 # kubeadm token create --print-join-command
-
-# Get component status
-kubectl get cs
-# Get nodes
-kubectl get nodes -o wide
-
 ```
 ### Joining the worker nodes to the master node to from the k8s cluster(on worker node)
 ```sh
 sudo kubeadm join <MASTER_IP>:6443 --token <TOKEN> \
         --discovery-token-ca-cert-hash <HASH>
 
+```
 
+### Accessing the K8s Cluster and Deploying a POD(on master node)
+```sh
+# Get component status
+kubectl get cs
+# Get nodes
+kubectl get nodes -o wide
+
+kubectl run mynginx --image=nginx 
+kubectl get pods -o wide --watch
 ```
