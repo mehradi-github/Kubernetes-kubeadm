@@ -142,13 +142,17 @@ amazon-linux-extras | grep -n -i docker
 sudo amazon-linux-extras enable docker
 sudo yum install docker -y
 
-# installing by dnf 
+
+# Installing by dnf 
 # sudo dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
 # sudo dnf update
 # sudo dnf install -y docker-ce docker-ce-cli containerd.io
 # sudo dnf install docker-ce docker-ce-cli containerd.io --allowerasing -y
+# Disabling repo
+# yum repolist all
+# sudo yum-config-manager --disable docker-ce-stable
 
-# installing by yum 
+# Installing by yum 
 # sudo yum install -y yum-utils
 # sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo    
 # sudo yum install docker-ce docker-ce-cli containerd.io
