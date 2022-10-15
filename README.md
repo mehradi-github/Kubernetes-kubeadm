@@ -7,16 +7,16 @@ kubeadm performs the actions necessary to get a minimum viable cluster up and ru
 ## Table of Contents
 - [Kubernetes Cluster installation using kubeadm](#kubernetes-cluster-installation-using-kubeadm)
   - [Table of Contents](#table-of-contents)
-  - [Installing kubeadm](#installing-kubeadm)
+  - [Installing Kubernetes Cluster using kubeadm](#installing-kubernetes-cluster-using-kubeadm)
     - [System Requirements](#system-requirements)
-    - [Control plane](#control-plane)
-    - [Worker node(s)](#worker-nodes)
-  - [Installing a container runtime](#installing-a-container-runtime)
     - [Forwarding IPv4 and letting iptables see bridged traffic](#forwarding-ipv4-and-letting-iptables-see-bridged-traffic)
-    - [Installing a container runtime](#installing-a-container-runtime-1)
+    - [Installing Docker as container runtime (CRI)](#installing-docker-as-container-runtime-cri)
     - [Installing kubeadm, kubelet and kubectl](#installing-kubeadm-kubelet-and-kubectl)
+    - [Configuring cgroups driver (Ignore if runtime is docker)](#configuring-cgroups-driver-ignore-if-runtime-is-docker)
+    - [**On Master Node:**](#on-master-node)
+    - [**On Worker Node:**](#on-worker-node)
 
-## Installing kubeadm
+## Installing Kubernetes Cluster using kubeadm
 This page shows how to [install the kubeadm toolbox](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/) on Amazon Linux 2 as a virtual machine.
 
 ### System Requirements
@@ -72,7 +72,7 @@ telnet <IP> 6443
 # chkconfig  --list |grep iptables
 # sudo systemctl disable iptables
 ```
-### Control plane
+**Control plane**
 | Protocol | Direction | Port Range | Purpose                 | Used By              |
 | :------: | :-------: | :--------: | :---------------------- | :------------------- |
 |   TCP    |  Inbound  |    6443    | Kubernetes API server   | All                  |
@@ -81,16 +81,13 @@ telnet <IP> 6443
 |   TCP    |  Inbound  |   10259    | kube-scheduler          | Self                 |
 |   TCP    |  Inbound  |   10257    | kube-controller-manager | Self                 |
 
-### Worker node(s)
+**Worker node(s)**
 | Protocol | Direction | Port Range  | Purpose            | Used By             |
 | :------: | :-------: | :---------: | :----------------- | :------------------ |
 |   TCP    |  Inbound  |    10250    | Kubelet API        | Self, Control plane |
 |   TCP    |  Inbound  | 30000-32767 | NodePort Services† | All                 |
 
 more detailes: [Ports and Protocols](https://kubernetes.io/docs/reference/ports-and-protocols/), [Opening a port on Linux](https://www.digitalocean.com/community/tutorials/opening-a-port-on-linux)
-
-## Installing a container runtime
-Docker Engine does not implement the CRI which is a requirement for a [container runtime](https://kubernetes.io/docs/setup/production-environment/container-runtimes/) to work with Kubernetes. For that reason, an additional service cri-dockerd has to be installed. cri-dockerd is a project based on the legacy built-in Docker Engine support that was removed from the kubelet in version 1.24.
 
 ### Forwarding IPv4 and letting iptables see bridged traffic
 
@@ -121,7 +118,7 @@ sudo sysctl --system
 
 ```
 
-### Installing a container runtime
+### Installing Docker as container runtime (CRI)
 To run containers in Pods, Kubernetes uses a [container runtime](https://kubernetes.io/docs/setup/production-environment/container-runtimes/).
 By default, Kubernetes uses the Container Runtime Interface (CRI) to interface with your chosen container runtime.
 
@@ -198,4 +195,28 @@ sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
 sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 
 sudo systemctl enable --now kubelet
+```
+### Configuring cgroups driver (Ignore if runtime is docker)
+On Linux, control groups are used to constrain resources that are allocated to processes.
+Both kubelet and the underlying container runtime need to interface with control groups to enforce resource management for pods and containers and set resources such as cpu/memory requests and limits. To interface with control groups, the kubelet and the container runtime need to use a cgroup driver. It's critical that the kubelet and the container runtime uses the same cgroup driver and are configured the same.
+There are two [cgroup drivers](https://kubernetes.io/docs/setup/production-environment/container-runtimes/#cgroup-drivers) available:
+- cgroupfs
+- systemd
+  
+### **On Master Node:**
+```sh
+sudo su
+ip addr
+#Initialize Kubernetes Cluster
+kubeadm init --apiserver-advertise-address=<MasterServerIP> --pod-network-cidr=192.168.0.0/16
+exit
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+kubectl get nodes
+```
+
+### **On Worker Node:**
+```sh
+
 ```
