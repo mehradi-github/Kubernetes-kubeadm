@@ -31,6 +31,7 @@ This page shows how to [install the kubeadm toolbox](https://kubernetes.io/docs/
 - Swap disabled. You MUST disable swap in order for the kubelet to work properly.
 
 ```sh
+dhclient -v
 ip link 
 ifconfig -a
 sudo cat /sys/class/dmi/id/product_uuid
