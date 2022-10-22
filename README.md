@@ -242,8 +242,14 @@ kubectl get cs
 # Get nodes
 kubectl get nodes -o wide
 
-kubectl run mynginx --image=nginx 
+#kubectl run mynginx --image=nginx 
+kubectl delete deployment nginx-dep
+kubectl apply -f nginx-deployment.yaml
 kubectl get pods -o wide --watch
+kubectl get services -o wide 
+kubectl describe service nginx-srv
+curl <NODE_IP>:<NodeProt>
+
 ```
 ## kubectl Cheat Sheet
 This page contains a list of commonly used kubectl commands and flags. [**kubectl Cheat Sheet**](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
