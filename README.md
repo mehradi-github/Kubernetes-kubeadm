@@ -256,4 +256,6 @@ curl <NODE_IP>:<NodeProt>
 This page contains a list of commonly used kubectl commands and flags. [**kubectl Cheat Sheet**](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
 
 ## Ingress NGINX Controller
-ingress-nginx is an Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer.
+[ingress-nginx](https://kubernetes.github.io/ingress-nginx/deploy/) is an Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer.
+![ingress](public/assets/images/ingress.svg "ingress")
+
