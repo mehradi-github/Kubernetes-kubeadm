@@ -18,6 +18,7 @@ kubeadm performs the actions necessary to get a minimum viable cluster up and ru
     - [Joining the worker nodes to the master node to from the k8s cluster(on worker node)](#joining-the-worker-nodes-to-the-master-node-to-from-the-k8s-clusteron-worker-node)
     - [Accessing the K8s Cluster and Deploying a POD(on master node)](#accessing-the-k8s-cluster-and-deploying-a-podon-master-node)
   - [kubectl Cheat Sheet](#kubectl-cheat-sheet)
+  - [Ingress NGINX Controller](#ingress-nginx-controller)
 
 ## Installing Kubernetes Cluster using kubeadm
 This page shows how to [install the kubeadm toolbox](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/) on Amazon Linux 2 as a virtual machine.
@@ -253,3 +254,6 @@ curl <NODE_IP>:<NodeProt>
 ```
 ## kubectl Cheat Sheet
 This page contains a list of commonly used kubectl commands and flags. [**kubectl Cheat Sheet**](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
+
+## Ingress NGINX Controller
+ingress-nginx is an Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer.
